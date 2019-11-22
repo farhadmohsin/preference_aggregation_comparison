@@ -3,8 +3,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Fix N (#voters) and m (#alternatives)
-N = 100
-m = 6
+
+#TODO: Change N,m. N = 100,200,300,...,1000. m = 2,4,6,8,10
+#       Do this 5 times for each N,m
+
+N = 300
+m = 10
 
 # sample gamma for all voters
 # gamma_all[i] will be the PL parameters for voter i
@@ -44,7 +48,7 @@ def Borda(ballots):
     return np.argmax(score)
 
 #%% calculate winner distribution for all profiles
-T = 10000 #number of samples
+T = 5000 #number of samples
 winner_1 = np.zeros(m)
 for t in range(T):
     ballots = np.zeros([N,m])
@@ -53,10 +57,11 @@ for t in range(T):
         ballots[i] = draw_pl_vote(m,gamma_all[i])
     #calculate winner based on the votes
     winner_1[Borda(ballots)] += 1
-
+    #winner_1[plurality(ballots)] += 1
+    
 #%% calculate winner distribution for mean_profile
     
-T = 10000 #number of samples
+T = 5000 #number of samples
 winner_2 = np.zeros(m)
 for t in range(T):
     # number of samples we take for each vote
@@ -69,6 +74,7 @@ for t in range(T):
         ballots[i] = draw_pl_vote(m,gamma_mean)
     #calculate winner based on the votes
     winner_2[Borda(ballots)] += 1
+    #winner_2[plurality(ballots)] += 1
     
 #%% calculate randomized voting rule result
 # for now, only Borda
@@ -91,15 +97,32 @@ def randomized_borda_score(gamma_all):
                 Borda_score[i] += gamma_all[user][i] / (gamma_all[user][i] + gamma_all[user][j])
     return Borda_score
 
+def randomized_plurality_score(Gamma): 
+    m = len(gamma_all[0])
+    n = len(gamma_all)    
+    Plurality_score = np.zeros(m)
+    
+    for i in range(m):
+        for user in range(n):
+            num = np.exp(gamma_all[user][i])
+            den = 0
+            for j in range(m):
+                den += np.exp(gamma_all[user][j])
+            Plurality_score[i] += num/den
+    return Plurality_score
+
 winner_3 = randomized_borda_score(gamma_all)
+#winner_3 = randomized_plurality_score(gamma_all)
 
 #%%
-def print_pretty(winner):
-    np.set_printoptions(precision=3)
-    winner = np.array(winner)
-    print(winner / np.sum(winner))
-    print(np.argsort(winner))
-    
-print_pretty(winner_1)
-print_pretty(winner_2)
-print_pretty(winner_3)
+#def print_pretty(winner):
+#    np.set_printoptions(precision=3)
+#    winner = np.array(winner)
+#    print(winner / np.sum(winner))
+#    print(np.flip(np.argsort(winner), axis = 0))
+#    
+#print_pretty(winner_1)
+#print_pretty(winner_2)
+#print_pretty(winner_3)
+#%%
+#TODO: need to output N,m, winner_1, winner_2, winner_3
